@@ -1,13 +1,17 @@
-import { supabase } from '@/lib/supabase'
+'use client'
 
-export default async function Home() {
-  const { data, error } = await supabase.from('trucks').select('*')
-  console.log('Supabase connected:', !error)
-  
+import dynamic from 'next/dynamic'
+
+const TruckMap = dynamic(() => import('@/components/map/TruckMap'), {
+  ssr: false,
+  loading: () => <p className="text-gray-500">Loading map...</p>
+})
+
+export default function Home() {
   return (
-    <main>
-      <h1>Taco Truck Platform</h1>
-      <p>Supabase status: {error ? 'Error - ' + error.message : 'Connected ✓'}</p>
+    <main className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Taquero</h1>
+      <TruckMap clientSlug="marios-tacos" />
     </main>
   )
 }
