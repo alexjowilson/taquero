@@ -45,9 +45,11 @@ export function useTruckLocations(clientSlug: string) {
       .channel('truck_locations')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'truck_locations' },
+        { event: 'UPDATE', schema: 'public', table: 'truck_locations' },
         (payload) => {
+          console.log('Real-time payload:', payload.new)
           setTrucks(prev => prev.map(truck => {
+            console.log('Comparing truck.id:', truck.id, 'to payload truck_id:', payload.new.truck_id)
             if (truck.id === payload.new.truck_id) {
               return { ...truck, latest_location: payload.new as any }
             }
@@ -55,8 +57,9 @@ export function useTruckLocations(clientSlug: string) {
           }))
         }
       )
-      .subscribe()
-
+      .subscribe((status) => {
+        console.log('Subscription status:', status)
+      })
     return () => { supabase.removeChannel(channel) }
   }, [clientSlug])
 
