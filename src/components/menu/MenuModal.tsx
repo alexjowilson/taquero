@@ -28,6 +28,22 @@ export default function MenuModal({ onClose }: Props) {
   const getQuantity = (id: string) =>
     cartItems.find(i => i.id === id)?.quantity ?? 0;
 
+async function handleCheckout() {
+  const res = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items: cartItems }),
+  });
+  const data = await res.json();
+  if (data.url) {
+    window.location.href = data.url;
+  } else {
+    console.error('Checkout error:', data.error);
+  }
+}
+
+
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       {/* Header */}
@@ -140,20 +156,28 @@ export default function MenuModal({ onClose }: Props) {
       )}
 
       {/* Sticky cart footer */}
-      {itemCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
-          <button
-            onClick={() => setView(view === 'menu' ? 'cart' : 'menu')}
-            className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl flex justify-between items-center px-5"
-          >
-            <span className="bg-orange-600 rounded-full w-7 h-7 flex items-center justify-center text-sm">
-              {itemCount}
-            </span>
-            <span>{view === 'cart' ? '← Back to Menu' : 'View Order'}</span>
-            <span>{formatPrice(total)}</span>
-          </button>
-        </div>
-      )}
+    {itemCount > 0 && (
+    <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t space-y-2">
+        {view === 'cart' && (
+        <button
+            onClick={handleCheckout}
+            className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl"
+        >
+            Checkout · {formatPrice(total)}
+        </button>
+        )}
+        <button
+        onClick={() => setView(view === 'menu' ? 'cart' : 'menu')}
+        className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl flex justify-between items-center px-5"
+        >
+        <span className="bg-orange-600 rounded-full w-7 h-7 flex items-center justify-center text-sm">
+            {itemCount}
+        </span>
+        <span>{view === 'cart' ? '← Back to Menu' : 'View Order'}</span>
+        <span>{formatPrice(total)}</span>
+        </button>
+    </div>
+    )}
     </div>
   );
 }
