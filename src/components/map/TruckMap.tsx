@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import MenuModal from '@/components/menu/MenuModal'
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps'
 import { useTruckLocations } from '@/hooks/useTruckLocations'
 import { TruckWithLocation } from '@/types/database'
@@ -15,6 +16,7 @@ type TruckMapProps = {
 
 function TruckMarker({ truck }: { truck: TruckWithLocation }) {
   const [open, setOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   
   // Handle array or single object from Supabase join
   const loc = Array.isArray(truck.latest_location) 
@@ -53,12 +55,15 @@ function TruckMarker({ truck }: { truck: TruckWithLocation }) {
           <div className="p-2 min-w-[150px]">
             <h3 className="font-bold text-gray-900 text-sm">{truck.name}</h3>
             <p className="text-xs text-gray-500 mt-1">Updated: {lastUpdated}</p>
-            <button className="mt-2 w-full bg-red-500 text-white text-xs font-semibold py-1.5 px-3 rounded hover:bg-red-600 transition-colors">
+            <button 
+              onClick={() => setMenuOpen(true)}
+              className="mt-2 w-full bg-red-500 text-white text-xs font-semibold py-1.5 px-3 rounded hover:bg-red-600 transition-colors">
               Order Now
             </button>
           </div>
         </InfoWindow>
       )}
+      {menuOpen && <MenuModal onClose={() => setMenuOpen(false)} />}
     </>
   )
 }
