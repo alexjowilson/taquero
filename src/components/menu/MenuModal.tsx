@@ -24,25 +24,43 @@ export default function MenuModal({ onClose }: Props) {
   const { grouped, loading, error } = useMenuItems();
   const { items: cartItems, dispatch, total, itemCount } = useCart();
   const [view, setView] = useState<'menu' | 'cart'>('menu');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const getQuantity = (id: string) =>
     cartItems.find(i => i.id === id)?.quantity ?? 0;
 
-async function handleCheckout() {
-  const res = await fetch('/api/checkout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items: cartItems }),
-  });
-  const data = await res.json();
-  if (data.url) {
-    window.location.href = data.url;
-  } else {
-    console.error('Checkout error:', data.error);
+  async function handleCheckout() {
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+
+    sessionStorage.setItem(
+      'taquero_last_order',
+      JSON.stringify({
+        items: cartItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+        total,
+        orderedAt: new Date().toISOString(),
+      })
+    );
+
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cartItems }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setCheckoutError('Something went wrong. Please try again.');
+        setCheckoutLoading(false);
+      }
+    } catch {
+      setCheckoutError('Unable to reach checkout. Check your connection.');
+      setCheckoutLoading(false);
+    }
   }
-}
-
-
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
@@ -106,7 +124,7 @@ async function handleCheckout() {
                 {CATEGORY_LABELS[category] ?? category}
               </h3>
               <div className="space-y-3">
-                {grouped[category].map(item => {        // 👈 fixed: was `items`
+                {grouped[category].map(item => {
                   const qty = getQuantity(item.id);
                   return (
                     <div
@@ -156,28 +174,34 @@ async function handleCheckout() {
       )}
 
       {/* Sticky cart footer */}
-    {itemCount > 0 && (
-    <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t space-y-2">
-        {view === 'cart' && (
-        <button
-            onClick={handleCheckout}
-            className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl"
-        >
-            Checkout · {formatPrice(total)}
-        </button>
-        )}
-        <button
-        onClick={() => setView(view === 'menu' ? 'cart' : 'menu')}
-        className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl flex justify-between items-center px-5"
-        >
-        <span className="bg-orange-600 rounded-full w-7 h-7 flex items-center justify-center text-sm">
-            {itemCount}
-        </span>
-        <span>{view === 'cart' ? '← Back to Menu' : 'View Order'}</span>
-        <span>{formatPrice(total)}</span>
-        </button>
-    </div>
-    )}
+      {itemCount > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t space-y-2">
+          {view === 'cart' && (
+            <>
+              {checkoutError && (
+                <p className="text-center text-sm text-red-500 pb-1">{checkoutError}</p>
+              )}
+              <button
+                onClick={handleCheckout}
+                disabled={checkoutLoading}
+                className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {checkoutLoading ? 'Redirecting...' : `Checkout · ${formatPrice(total)}`}
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setView(view === 'menu' ? 'cart' : 'menu')}
+            className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl flex justify-between items-center px-5"
+          >
+            <span className="bg-orange-600 rounded-full w-7 h-7 flex items-center justify-center text-sm">
+              {itemCount}
+            </span>
+            <span>{view === 'cart' ? '← Back to Menu' : 'View Order'}</span>
+            <span>{formatPrice(total)}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

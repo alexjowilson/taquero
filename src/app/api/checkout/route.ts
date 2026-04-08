@@ -23,18 +23,21 @@ export async function POST(req: Request) {
     }
 
     const response = await client.checkout.paymentLinks.create({
-    idempotencyKey: randomUUID(),
-    order: {
+      idempotencyKey: randomUUID(),
+      order: {
         locationId: process.env.SQUARE_SANDBOX_LOCATION_ID!,
         lineItems: items.map(item => ({
-        name: item.name,
-        quantity: String(item.quantity),
-        basePriceMoney: {
+          name: item.name,
+          quantity: String(item.quantity),
+          basePriceMoney: {
             amount: BigInt(item.price),
             currency: 'USD',
-        },
+          },
         })),
-    },
+      },
+      checkoutOptions: {
+        redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/order-confirmation`,
+      },
     });
 
     return NextResponse.json({ url: response.paymentLink?.url });
