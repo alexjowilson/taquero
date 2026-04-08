@@ -1,17 +1,435 @@
-'use client'
+'use client';
 
-import dynamic from 'next/dynamic'
+import dynamic from 'next/dynamic';
 
 const TruckMap = dynamic(() => import('@/components/map/TruckMap'), {
   ssr: false,
-  loading: () => <p className="text-gray-500">Loading map...</p>
-})
+  loading: () => (
+    <div style={styles.mapLoading}>
+      <span style={styles.mapLoadingText}>Finding trucks near you...</span>
+    </div>
+  ),
+});
 
 export default function Home() {
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Taquero</h1>
-      <TruckMap clientSlug="marios-tacos" />
-    </main>
-  )
+    <>
+      <style>{globalStyles}</style>
+      <div style={styles.page}>
+
+        {/* ── Header ────────────────────────────────── */}
+        <header style={styles.header}>
+          <div style={styles.headerInner}>
+            <div style={styles.wordmark}>
+              <span style={styles.wordmarkTaco}>🌮</span>
+              <span style={styles.wordmarkText}>Taquero</span>
+            </div>
+            <nav style={styles.nav}>
+              <a href="#how-it-works" style={styles.navLink}>How It Works</a>
+              <a href="#for-trucks" style={styles.navLinkAccent}>For Trucks →</a>
+            </nav>
+          </div>
+        </header>
+
+        {/* ── Hero ──────────────────────────────────── */}
+        <section style={styles.hero}>
+          <div style={styles.heroContent}>
+            <p style={styles.eyebrow}>Live · Lynnwood, WA</p>
+            <h1 style={styles.headline}>
+              Find the truck.<br />
+              <em style={styles.headlineItalic}>Order ahead.</em>
+            </h1>
+            <p style={styles.subheadline}>
+              Real-time GPS tracking and mobile ordering for the
+              best taco trucks on Highway 99.
+            </p>
+          </div>
+        </section>
+
+        {/* ── Map ───────────────────────────────────── */}
+        <section style={styles.mapSection}>
+          <div style={styles.mapWrapper}>
+            <TruckMap clientSlug="marios-tacos" />
+          </div>
+          <p style={styles.mapCaption}>
+            Tap any truck to browse the menu and order directly.
+          </p>
+        </section>
+
+        {/* ── How It Works ──────────────────────────── */}
+        <section id="how-it-works" style={styles.howSection}>
+          <div style={styles.howInner}>
+            <p style={styles.sectionEyebrow}>The Experience</p>
+            <h2 style={styles.sectionHeading}>Three steps to your taco.</h2>
+            <div style={styles.steps}>
+              {HOW_STEPS.map((step, i) => (
+                <div key={i} style={styles.step}>
+                  <div style={styles.stepNumber}>{String(i + 1).padStart(2, '0')}</div>
+                  <div style={styles.stepIcon}>{step.icon}</div>
+                  <h3 style={styles.stepTitle}>{step.title}</h3>
+                  <p style={styles.stepBody}>{step.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── For Trucks CTA ────────────────────────── */}
+        <section id="for-trucks" style={styles.ctaSection}>
+          <div style={styles.ctaInner}>
+            <p style={styles.sectionEyebrow}>For Operators</p>
+            <h2 style={styles.ctaHeading}>
+              Run your truck smarter.
+            </h2>
+            <p style={styles.ctaBody}>
+              Taquero gives taco truck owners a real-time GPS presence, mobile ordering,
+              and Square-powered payments — all in one platform built specifically
+              for the Highway 99 corridor.
+            </p>
+            <a href="mailto:hello@taquero.app" style={styles.ctaButton}>
+              Get Early Access
+            </a>
+          </div>
+        </section>
+
+        {/* ── Footer ────────────────────────────────── */}
+        <footer style={styles.footer}>
+          <div style={styles.footerInner}>
+            <span style={styles.footerWordmark}>🌮 Taquero</span>
+            <span style={styles.footerCopy}>
+              © {new Date().getFullYear()} Taquero · Lynnwood, WA
+            </span>
+            <span style={styles.footerTagline}>Built for the 99.</span>
+          </div>
+        </footer>
+
+      </div>
+    </>
+  );
 }
+
+// ─── Data ────────────────────────────────────────────────────────────────────
+
+const HOW_STEPS = [
+  {
+    icon: '📍',
+    title: 'Find the truck',
+    body: 'See every truck on the map in real time. GPS updates live so you always know exactly where to go.',
+  },
+  {
+    icon: '📋',
+    title: 'Order ahead',
+    body: 'Browse the full menu, add items to your cart, and pay securely — all before you leave your seat.',
+  },
+  {
+    icon: '🛵',
+    title: 'Pick up fresh',
+    body: 'Your order is waiting when you arrive. No line, no wait. Just tacos.',
+  },
+];
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
+const C = {
+  bg: '#0e0c0a',
+  surface: '#161310',
+  border: 'rgba(255,255,255,0.07)',
+  cream: '#f0ebe0',
+  creamMuted: 'rgba(240,235,224,0.55)',
+  creamFaint: 'rgba(240,235,224,0.25)',
+  gold: '#c8922a',
+  goldLight: '#e8b04a',
+  orange: '#d95f1a',
+};
+
+const globalStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: ${C.bg}; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up-1 { animation: fadeUp 0.7s ease forwards; }
+  .fade-up-2 { animation: fadeUp 0.7s 0.15s ease both; }
+  .fade-up-3 { animation: fadeUp 0.7s 0.3s ease both; }
+`;
+
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: '100vh',
+    backgroundColor: C.bg,
+    fontFamily: "'DM Sans', sans-serif",
+    color: C.cream,
+  },
+
+  // Header
+  header: {
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+    borderBottom: `1px solid ${C.border}`,
+    backgroundColor: 'rgba(14,12,10,0.85)',
+    backdropFilter: 'blur(12px)',
+  },
+  headerInner: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '0 32px',
+    height: '64px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  wordmark: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  wordmarkTaco: {
+    fontSize: '22px',
+    lineHeight: 1,
+  },
+  wordmarkText: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: '22px',
+    fontWeight: 600,
+    letterSpacing: '0.04em',
+    color: C.cream,
+  },
+  nav: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '32px',
+  },
+  navLink: {
+    fontSize: '14px',
+    fontWeight: 400,
+    color: C.creamMuted,
+    textDecoration: 'none',
+    letterSpacing: '0.02em',
+  },
+  navLinkAccent: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: C.gold,
+    textDecoration: 'none',
+    letterSpacing: '0.02em',
+  },
+
+  // Hero
+  hero: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '80px 32px 48px',
+  },
+  heroContent: {
+    maxWidth: '640px',
+  },
+  eyebrow: {
+    fontSize: '12px',
+    fontWeight: 500,
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase' as const,
+    color: C.gold,
+    marginBottom: '20px',
+    animation: 'fadeUp 0.6s ease forwards',
+  },
+  headline: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: 'clamp(52px, 7vw, 84px)',
+    fontWeight: 600,
+    lineHeight: 1.05,
+    color: C.cream,
+    marginBottom: '24px',
+    animation: 'fadeUp 0.6s 0.1s ease both',
+  },
+  headlineItalic: {
+    fontStyle: 'italic',
+    color: C.gold,
+    fontWeight: 400,
+  },
+  subheadline: {
+    fontSize: '17px',
+    fontWeight: 300,
+    lineHeight: 1.65,
+    color: C.creamMuted,
+    maxWidth: '480px',
+    animation: 'fadeUp 0.6s 0.2s ease both',
+  },
+
+  // Map
+  mapSection: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '0 32px 16px',
+  },
+  mapWrapper: {
+    borderRadius: '16px',
+    overflow: 'hidden',
+    border: `1px solid ${C.border}`,
+    height: '520px',
+    boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+  },
+  mapLoading: {
+    height: '520px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: C.surface,
+    borderRadius: '16px',
+  },
+  mapLoadingText: {
+    fontSize: '14px',
+    color: C.creamFaint,
+    letterSpacing: '0.04em',
+  },
+  mapCaption: {
+    marginTop: '12px',
+    fontSize: '13px',
+    color: C.creamFaint,
+    textAlign: 'center' as const,
+    letterSpacing: '0.02em',
+  },
+
+  // How it works
+  howSection: {
+    borderTop: `1px solid ${C.border}`,
+    marginTop: '80px',
+    padding: '96px 32px',
+  },
+  howInner: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+  },
+  sectionEyebrow: {
+    fontSize: '12px',
+    fontWeight: 500,
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase' as const,
+    color: C.gold,
+    marginBottom: '16px',
+  },
+  sectionHeading: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: 'clamp(36px, 4vw, 52px)',
+    fontWeight: 600,
+    color: C.cream,
+    marginBottom: '64px',
+  },
+  steps: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gap: '2px',
+  },
+  step: {
+    padding: '40px 36px',
+    backgroundColor: C.surface,
+    borderRadius: '4px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '12px',
+  },
+  stepNumber: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: '13px',
+    fontWeight: 600,
+    letterSpacing: '0.1em',
+    color: C.gold,
+    opacity: 0.7,
+  },
+  stepIcon: {
+    fontSize: '28px',
+    marginBottom: '4px',
+  },
+  stepTitle: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: '24px',
+    fontWeight: 600,
+    color: C.cream,
+    letterSpacing: '0.01em',
+  },
+  stepBody: {
+    fontSize: '15px',
+    fontWeight: 300,
+    lineHeight: 1.65,
+    color: C.creamMuted,
+  },
+
+  // CTA section
+  ctaSection: {
+    borderTop: `1px solid ${C.border}`,
+    padding: '96px 32px',
+    background: `linear-gradient(135deg, rgba(200,146,42,0.06) 0%, transparent 60%)`,
+  },
+  ctaInner: {
+    maxWidth: '680px',
+    margin: '0 auto',
+    textAlign: 'center' as const,
+  },
+  ctaHeading: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: 'clamp(36px, 4vw, 56px)',
+    fontWeight: 600,
+    color: C.cream,
+    marginBottom: '20px',
+    lineHeight: 1.1,
+  },
+  ctaBody: {
+    fontSize: '16px',
+    fontWeight: 300,
+    lineHeight: 1.7,
+    color: C.creamMuted,
+    marginBottom: '40px',
+  },
+  ctaButton: {
+    display: 'inline-block',
+    padding: '14px 36px',
+    backgroundColor: C.gold,
+    color: C.bg,
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '15px',
+    fontWeight: 500,
+    letterSpacing: '0.04em',
+    textDecoration: 'none',
+    borderRadius: '4px',
+    transition: 'background-color 0.2s ease',
+  },
+
+  // Footer
+  footer: {
+    borderTop: `1px solid ${C.border}`,
+    padding: '32px',
+  },
+  footerInner: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap' as const,
+    gap: '12px',
+  },
+  footerWordmark: {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: '16px',
+    fontWeight: 600,
+    color: C.cream,
+    letterSpacing: '0.04em',
+  },
+  footerCopy: {
+    fontSize: '13px',
+    color: C.creamFaint,
+  },
+  footerTagline: {
+    fontSize: '13px',
+    fontStyle: 'italic',
+    color: C.gold,
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    opacity: 0.7,
+  },
+};
