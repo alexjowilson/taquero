@@ -2,9 +2,15 @@ import { SquareClient, SquareEnvironment } from 'square';
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const client = new SquareClient({
-  token: process.env.SQUARE_SANDBOX_ACCESS_TOKEN!,
-  environment: SquareEnvironment.Sandbox,
+  token: isProduction
+    ? process.env.SQUARE_ACCESS_TOKEN!
+    : process.env.SQUARE_SANDBOX_ACCESS_TOKEN!,
+  environment: isProduction
+    ? SquareEnvironment.Production
+    : SquareEnvironment.Sandbox,
 });
 
 type CartItem = {
@@ -22,10 +28,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
+    const locationId = isProduction
+      ? process.env.SQUARE_LOCATION_ID!
+      : process.env.SQUARE_SANDBOX_LOCATION_ID!;
+
     const response = await client.checkout.paymentLinks.create({
       idempotencyKey: randomUUID(),
       order: {
-        locationId: process.env.SQUARE_SANDBOX_LOCATION_ID!,
+        locationId,
         lineItems: items.map(item => ({
           name: item.name,
           quantity: String(item.quantity),
@@ -41,8 +51,6 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ url: response.paymentLink?.url });
-
-
   } catch (error) {
     console.error('Square error:', error);
     return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 });
