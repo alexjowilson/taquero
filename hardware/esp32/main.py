@@ -3,21 +3,14 @@ import urequests
 import ujson
 import ntptime
 import time
+from config import WIFI_SSID, WIFI_PASSWORD, SUPABASE_URL, SUPABASE_KEY
 
 # ─── CONFIG ───────────────────────────────────────────────
-WIFI_SSID     = "YOUR_WIFI_SSID"
-WIFI_PASSWORD = "YOUR_WIFI_PASSWORD"
-
-# ─── CONFIG ───────────────────────────────────────────────
-# Copy these from your Supabase project settings and .env.local
-# Never commit real values to Git
-SUPABASE_URL  = "YOUR_SUPABASE_URL"
-SUPABASE_KEY  = "YOUR_SUPABASE_ANON_KEY"
 TRUCK_ID      = "4ad56a60-79f7-4497-80c4-d996026534d6"
-
-POST_INTERVAL = 2  # seconds between updates
+POST_INTERVAL = 2   # seconds between updates (set to 30 on LILYGO to save data)
 
 # ─── SIMULATED PATH (Hwy 99, Lynnwood → Everett) ──────────
+# Replace this entire block with real GPS reads when running on LILYGO
 WAYPOINTS = [
     (47.8209, -122.2821),
     (47.8350, -122.2790),
