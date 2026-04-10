@@ -21,12 +21,12 @@ export default function Home() {
         <header style={styles.header}>
           <div style={styles.headerInner}>
             <div style={styles.wordmark}>
-              <span style={styles.wordmarkTaco}>🌮</span>
-              <span style={styles.wordmarkText}>Taquero</span>
+              <span style={styles.wordmarkIcon}>🚚</span>
+              <span style={styles.wordmarkText}>GoVendGo</span>
             </div>
             <nav style={styles.nav}>
               <a href="#how-it-works" style={styles.navLink}>How It Works</a>
-              <a href="#for-trucks" style={styles.navLinkAccent}>For Trucks →</a>
+              <a href="#for-trucks" style={styles.navLinkAccent}>For Vendors →</a>
             </nav>
           </div>
         </header>
@@ -41,7 +41,7 @@ export default function Home() {
             </h1>
             <p style={styles.subheadline}>
               Real-time GPS tracking and mobile ordering for the
-              best taco trucks on Highway 99.
+              best food trucks near you.
             </p>
           </div>
         </section>
@@ -60,7 +60,7 @@ export default function Home() {
         <section id="how-it-works" style={styles.howSection}>
           <div style={styles.howInner}>
             <p style={styles.sectionEyebrow}>The Experience</p>
-            <h2 style={styles.sectionHeading}>Three steps to your taco.</h2>
+            <h2 style={styles.sectionHeading}>Three steps to your order.</h2>
             <div style={styles.steps}>
               {HOW_STEPS.map((step, i) => (
                 <div key={i} style={styles.step}>
@@ -74,7 +74,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── For Trucks CTA ────────────────────────── */}
+        {/* ── For Vendors CTA ───────────────────────── */}
         <section id="for-trucks" style={styles.ctaSection}>
           <div style={styles.ctaInner}>
             <p style={styles.sectionEyebrow}>For Operators</p>
@@ -82,11 +82,10 @@ export default function Home() {
               Run your truck smarter.
             </h2>
             <p style={styles.ctaBody}>
-              Taquero gives taco truck owners a real-time GPS presence, mobile ordering,
-              and Square-powered payments — all in one platform built specifically
-              for the Highway 99 corridor.
+              GoVendGo gives food truck owners a real-time GPS presence, mobile ordering,
+              and Square-powered payments — all in one platform built for vendors on the go.
             </p>
-            <a href="mailto:hello@taquero.app" style={styles.ctaButton}>
+            <a href="mailto:hello@govendgo.com" style={styles.ctaButton}>
               Get Early Access
             </a>
           </div>
@@ -95,11 +94,11 @@ export default function Home() {
         {/* ── Footer ────────────────────────────────── */}
         <footer style={styles.footer}>
           <div style={styles.footerInner}>
-            <span style={styles.footerWordmark}>🌮 Taquero</span>
+            <span style={styles.footerWordmark}>🚚 GoVendGo</span>
             <span style={styles.footerCopy}>
-              © {new Date().getFullYear()} Taquero · Lynnwood, WA
+              © {new Date().getFullYear()} GoVendGo · Lynnwood, WA
             </span>
-            <span style={styles.footerTagline}>Built for the 99.</span>
+            <span style={styles.footerTagline}>Built for the street.</span>
           </div>
         </footer>
 
@@ -124,22 +123,23 @@ const HOW_STEPS = [
   {
     icon: '🛵',
     title: 'Pick up fresh',
-    body: 'Your order is waiting when you arrive. No line, no wait. Just tacos.',
+    body: 'Your order is waiting when you arrive. No line, no wait. Just great food.',
   },
 ];
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const C = {
-  bg: '#0e0c0a',
-  surface: '#161310',
+  bg: '#080f09',
+  surface: '#0f180f',
   border: 'rgba(255,255,255,0.07)',
-  cream: '#f0ebe0',
-  creamMuted: 'rgba(240,235,224,0.55)',
-  creamFaint: 'rgba(240,235,224,0.25)',
-  gold: '#c8922a',
-  goldLight: '#e8b04a',
-  orange: '#d95f1a',
+  white: '#f4f6f3',
+  whiteMuted: 'rgba(244,246,243,0.55)',
+  whiteFaint: 'rgba(244,246,243,0.25)',
+  green: '#28a84a',
+  greenLight: '#3ecf65',
+  orange: '#e8621a',
+  orangeLight: '#f07d38',
 };
 
 const globalStyles = `
@@ -164,7 +164,7 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: '100vh',
     backgroundColor: C.bg,
     fontFamily: "'DM Sans', sans-serif",
-    color: C.cream,
+    color: C.white,
   },
 
   // Header
@@ -173,7 +173,7 @@ const styles: Record<string, React.CSSProperties> = {
     top: 0,
     zIndex: 100,
     borderBottom: `1px solid ${C.border}`,
-    backgroundColor: 'rgba(14,12,10,0.85)',
+    backgroundColor: 'rgba(8,15,9,0.88)',
     backdropFilter: 'blur(12px)',
   },
   headerInner: {
@@ -190,7 +190,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '10px',
   },
-  wordmarkTaco: {
+  wordmarkIcon: {
     fontSize: '22px',
     lineHeight: 1,
   },
@@ -199,7 +199,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '22px',
     fontWeight: 600,
     letterSpacing: '0.04em',
-    color: C.cream,
+    color: C.white,
   },
   nav: {
     display: 'flex',
@@ -209,14 +209,14 @@ const styles: Record<string, React.CSSProperties> = {
   navLink: {
     fontSize: '14px',
     fontWeight: 400,
-    color: C.creamMuted,
+    color: C.whiteMuted,
     textDecoration: 'none',
     letterSpacing: '0.02em',
   },
   navLinkAccent: {
     fontSize: '14px',
     fontWeight: 500,
-    color: C.gold,
+    color: C.orange,
     textDecoration: 'none',
     letterSpacing: '0.02em',
   },
@@ -235,7 +235,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 500,
     letterSpacing: '0.14em',
     textTransform: 'uppercase' as const,
-    color: C.gold,
+    color: C.green,
     marginBottom: '20px',
     animation: 'fadeUp 0.6s ease forwards',
   },
@@ -244,20 +244,20 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 'clamp(52px, 7vw, 84px)',
     fontWeight: 600,
     lineHeight: 1.05,
-    color: C.cream,
+    color: C.white,
     marginBottom: '24px',
     animation: 'fadeUp 0.6s 0.1s ease both',
   },
   headlineItalic: {
     fontStyle: 'italic',
-    color: C.gold,
+    color: C.orange,
     fontWeight: 400,
   },
   subheadline: {
     fontSize: '17px',
     fontWeight: 300,
     lineHeight: 1.65,
-    color: C.creamMuted,
+    color: C.whiteMuted,
     maxWidth: '480px',
     animation: 'fadeUp 0.6s 0.2s ease both',
   },
@@ -285,13 +285,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   mapLoadingText: {
     fontSize: '14px',
-    color: C.creamFaint,
+    color: C.whiteFaint,
     letterSpacing: '0.04em',
   },
   mapCaption: {
     marginTop: '12px',
     fontSize: '13px',
-    color: C.creamFaint,
+    color: C.whiteFaint,
     textAlign: 'center' as const,
     letterSpacing: '0.02em',
   },
@@ -311,14 +311,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 500,
     letterSpacing: '0.14em',
     textTransform: 'uppercase' as const,
-    color: C.gold,
+    color: C.green,
     marginBottom: '16px',
   },
   sectionHeading: {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
     fontSize: 'clamp(36px, 4vw, 52px)',
     fontWeight: 600,
-    color: C.cream,
+    color: C.white,
     marginBottom: '64px',
   },
   steps: {
@@ -339,8 +339,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     fontWeight: 600,
     letterSpacing: '0.1em',
-    color: C.gold,
-    opacity: 0.7,
+    color: C.green,
+    opacity: 0.8,
   },
   stepIcon: {
     fontSize: '28px',
@@ -350,21 +350,21 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
     fontSize: '24px',
     fontWeight: 600,
-    color: C.cream,
+    color: C.white,
     letterSpacing: '0.01em',
   },
   stepBody: {
     fontSize: '15px',
     fontWeight: 300,
     lineHeight: 1.65,
-    color: C.creamMuted,
+    color: C.whiteMuted,
   },
 
   // CTA section
   ctaSection: {
     borderTop: `1px solid ${C.border}`,
     padding: '96px 32px',
-    background: `linear-gradient(135deg, rgba(200,146,42,0.06) 0%, transparent 60%)`,
+    background: `linear-gradient(135deg, rgba(40,168,74,0.07) 0%, rgba(232,98,26,0.05) 100%)`,
   },
   ctaInner: {
     maxWidth: '680px',
@@ -375,7 +375,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
     fontSize: 'clamp(36px, 4vw, 56px)',
     fontWeight: 600,
-    color: C.cream,
+    color: C.white,
     marginBottom: '20px',
     lineHeight: 1.1,
   },
@@ -383,14 +383,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '16px',
     fontWeight: 300,
     lineHeight: 1.7,
-    color: C.creamMuted,
+    color: C.whiteMuted,
     marginBottom: '40px',
   },
   ctaButton: {
     display: 'inline-block',
     padding: '14px 36px',
-    backgroundColor: C.gold,
-    color: C.bg,
+    backgroundColor: C.orange,
+    color: '#ffffff',
     fontFamily: "'DM Sans', sans-serif",
     fontSize: '15px',
     fontWeight: 500,
@@ -418,18 +418,18 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
     fontSize: '16px',
     fontWeight: 600,
-    color: C.cream,
+    color: C.white,
     letterSpacing: '0.04em',
   },
   footerCopy: {
     fontSize: '13px',
-    color: C.creamFaint,
+    color: C.whiteFaint,
   },
   footerTagline: {
     fontSize: '13px',
     fontStyle: 'italic',
-    color: C.gold,
+    color: C.orange,
     fontFamily: "'Cormorant Garamond', Georgia, serif",
-    opacity: 0.7,
+    opacity: 0.8,
   },
 };

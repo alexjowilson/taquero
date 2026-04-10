@@ -136,10 +136,10 @@ function TruckMarker({ truck, userLocation }: TruckMarkerProps) {
         onClick={() => setOpen(true)}
       >
         <Pin
-          background="#ef4444"
-          borderColor="#b91c1c"
+          background="#28a84a"
+          borderColor="#1a7a34"
           glyphColor="#ffffff"
-          glyph="🌮"
+          glyph="🚚"
           scale={1.2}
         />
       </AdvancedMarker>
@@ -167,7 +167,7 @@ function TruckMarker({ truck, userLocation }: TruckMarkerProps) {
             <p className="text-xs text-gray-500 mt-1">Updated: {lastUpdated}</p>
             <button
               onClick={() => setMenuOpen(true)}
-              className="mt-2 w-full bg-red-500 text-white text-xs font-semibold py-1.5 px-3 rounded hover:bg-red-600 transition-colors"
+              className="mt-2 w-full bg-green-600 text-white text-xs font-semibold py-1.5 px-3 rounded hover:bg-green-700 transition-colors"
             >
               Order Now
             </button>

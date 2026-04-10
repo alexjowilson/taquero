@@ -34,8 +34,8 @@ export default function MenuModal({ onClose }: Props) {
     setCheckoutLoading(true);
     setCheckoutError(null);
 
-    sessionStorage.setItem(
-      'taquero_last_order',
+    localStorage.setItem(
+      'govendgo_last_order',
       JSON.stringify({
         items: cartItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
         total,
@@ -66,7 +66,7 @@ export default function MenuModal({ onClose }: Props) {
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-4 border-b">
-        <h2 className="text-xl font-bold">{view === 'menu' ? 'Menu' : 'Your Order'}</h2>
+        <h2 className="text-xl font-bold text-gray-900">{view === 'menu' ? 'Menu' : 'Your Order'}</h2>
         <button
           onClick={onClose}
           className="text-gray-500 hover:text-black text-2xl leading-none"
@@ -82,31 +82,31 @@ export default function MenuModal({ onClose }: Props) {
             {cartItems.map(item => (
               <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border">
                 <div className="flex-1">
-                  <p className="font-medium">{item.name}</p>
+                  <p className="font-medium text-gray-900">{item.name}</p>
                   <p className="text-sm text-gray-500">{formatPrice(item.price)} each</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => dispatch({ type: 'DECREMENT', id: item.id })}
-                    className="w-8 h-8 rounded-full border-2 border-orange-500 text-orange-500 font-bold"
+                    className="w-8 h-8 rounded-full border-2 border-green-600 text-green-600 font-bold"
                   >
                     −
                   </button>
-                  <span className="font-bold w-4 text-center">{item.quantity}</span>
+                  <span className="font-bold w-4 text-center text-gray-900">{item.quantity}</span>
                   <button
                     onClick={() => dispatch({ type: 'INCREMENT', id: item.id })}
-                    className="w-8 h-8 rounded-full bg-orange-500 text-white font-bold"
+                    className="w-8 h-8 rounded-full bg-green-600 text-white font-bold"
                   >
                     +
                   </button>
                 </div>
-                <p className="ml-4 font-semibold w-14 text-right">
+                <p className="ml-4 font-semibold w-14 text-right text-gray-900">
                   {formatPrice(item.price * item.quantity)}
                 </p>
               </div>
             ))}
           </div>
-          <div className="mt-6 pt-4 border-t flex justify-between font-bold text-lg">
+          <div className="mt-6 pt-4 border-t flex justify-between font-bold text-lg text-gray-900">
             <span>Total</span>
             <span>{formatPrice(total)}</span>
           </div>
@@ -120,7 +120,7 @@ export default function MenuModal({ onClose }: Props) {
 
           {CATEGORY_ORDER.filter(cat => grouped[cat]).map((category) => (
             <div key={category} className="mt-6">
-              <h3 className="text-lg font-semibold mb-3">
+              <h3 className="text-lg font-semibold mb-3 text-green-600">
                 {CATEGORY_LABELS[category] ?? category}
               </h3>
               <div className="space-y-3">
@@ -132,18 +132,18 @@ export default function MenuModal({ onClose }: Props) {
                       className="flex items-center justify-between p-3 rounded-xl border"
                     >
                       <div className="flex-1 pr-4">
-                        <p className="font-medium">{item.name}</p>
+                        <p className="font-medium text-gray-900">{item.name}</p>
                         {item.description && (
                           <p className="text-sm text-gray-500 mt-0.5">{item.description}</p>
                         )}
-                        <p className="text-sm font-semibold mt-1">{formatPrice(item.price)}</p>
+                        <p className="text-sm font-semibold mt-1 text-gray-900">{formatPrice(item.price)}</p>
                       </div>
                       {qty === 0 ? (
                         <button
                           onClick={() =>
                             dispatch({ type: 'ADD_ITEM', item: { id: item.id, name: item.name, price: item.price } })
                           }
-                          className="bg-orange-500 text-white text-sm font-bold px-4 py-2 rounded-full"
+                          className="bg-green-600 text-white text-sm font-bold px-4 py-2 rounded-full"
                         >
                           Add
                         </button>
@@ -151,14 +151,14 @@ export default function MenuModal({ onClose }: Props) {
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => dispatch({ type: 'DECREMENT', id: item.id })}
-                            className="w-8 h-8 rounded-full border-2 border-orange-500 text-orange-500 font-bold"
+                            className="w-8 h-8 rounded-full border-2 border-green-600 text-green-600 font-bold"
                           >
                             −
                           </button>
-                          <span className="font-bold w-4 text-center">{qty}</span>
+                          <span className="font-bold w-4 text-center text-gray-900">{qty}</span>
                           <button
                             onClick={() => dispatch({ type: 'INCREMENT', id: item.id })}
-                            className="w-8 h-8 rounded-full bg-orange-500 text-white font-bold"
+                            className="w-8 h-8 rounded-full bg-green-600 text-white font-bold"
                           >
                             +
                           </button>
@@ -184,7 +184,7 @@ export default function MenuModal({ onClose }: Props) {
               <button
                 onClick={handleCheckout}
                 disabled={checkoutLoading}
-                className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full bg-green-600 text-white font-bold py-4 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {checkoutLoading ? 'Redirecting...' : `Checkout · ${formatPrice(total)}`}
               </button>
@@ -192,9 +192,9 @@ export default function MenuModal({ onClose }: Props) {
           )}
           <button
             onClick={() => setView(view === 'menu' ? 'cart' : 'menu')}
-            className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl flex justify-between items-center px-5"
+            className="w-full bg-green-600 text-white font-bold py-4 rounded-2xl flex justify-between items-center px-5"
           >
-            <span className="bg-orange-600 rounded-full w-7 h-7 flex items-center justify-center text-sm">
+            <span className="bg-green-700 rounded-full w-7 h-7 flex items-center justify-center text-sm">
               {itemCount}
             </span>
             <span>{view === 'cart' ? '← Back to Menu' : 'View Order'}</span>

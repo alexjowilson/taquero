@@ -23,21 +23,18 @@ export default function OrderConfirmationPage() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Read order snapshot saved before Square redirect
-    const raw = sessionStorage.getItem('taquero_last_order');
+    const raw = localStorage.getItem('govendgo_last_order');
     if (raw) {
       try {
         setOrder(JSON.parse(raw));
-        sessionStorage.removeItem('taquero_last_order');
+        localStorage.removeItem('govendgo_last_order');
       } catch {
         // Malformed data — proceed with empty state
       }
     }
 
-    // Clear cart context regardless
     dispatch({ type: 'CLEAR' });
 
-    // Stagger the entrance animation
     const t = setTimeout(() => setVisible(true), 80);
     return () => clearTimeout(t);
   }, [dispatch]);
@@ -54,7 +51,6 @@ export default function OrderConfirmationPage() {
 
   return (
     <main style={styles.page}>
-      {/* Ambient background blobs */}
       <div style={styles.blob1} />
       <div style={styles.blob2} />
 
@@ -68,17 +64,16 @@ export default function OrderConfirmationPage() {
       >
         {/* Icon */}
         <div style={styles.iconRing}>
-          <span style={styles.iconEmoji}>🌮</span>
+          <span style={styles.iconEmoji}>🚚</span>
         </div>
 
         {/* Heading */}
-        <h1 style={styles.heading}>¡Órale!</h1>
-        <p style={styles.subheading}>Your order is on its way.</p>
+        <h1 style={styles.heading}>You're all set!</h1>
+        <p style={styles.subheading}>Order received. See you soon!</p>
         {formattedTime && (
           <p style={styles.timestamp}>Placed at {formattedTime}</p>
         )}
 
-        {/* Divider */}
         <div style={styles.divider} />
 
         {/* Line items */}
@@ -110,14 +105,13 @@ export default function OrderConfirmationPage() {
           </>
         )}
 
-        {/* CTA */}
         <button style={styles.button} onClick={() => router.push('/')}>
           Back to map
         </button>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         @keyframes blobFloat {
@@ -134,7 +128,7 @@ export default function OrderConfirmationPage() {
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh',
-    backgroundColor: '#0f0800',
+    backgroundColor: '#080f09',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -144,13 +138,12 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'DM Sans', sans-serif",
   },
 
-  // Ambient glow blobs
   blob1: {
     position: 'absolute',
     width: '480px',
     height: '480px',
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(220,80,20,0.18) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(40,168,74,0.18) 0%, transparent 70%)',
     top: '-80px',
     left: '-120px',
     animation: 'blobFloat 9s ease-in-out infinite',
@@ -161,7 +154,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: '400px',
     height: '400px',
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(255,160,0,0.12) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(232,98,26,0.12) 0%, transparent 70%)',
     bottom: '-60px',
     right: '-80px',
     animation: 'blobFloat 11s ease-in-out infinite reverse',
@@ -188,12 +181,12 @@ const styles: Record<string, React.CSSProperties> = {
     width: '72px',
     height: '72px',
     borderRadius: '50%',
-    background: 'linear-gradient(135deg, #e8500a, #f5a623)',
+    background: 'linear-gradient(135deg, #28a84a, #3ecf65)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: '20px',
-    boxShadow: '0 0 40px rgba(232,80,10,0.4)',
+    boxShadow: '0 0 40px rgba(40,168,74,0.4)',
   },
   iconEmoji: {
     fontSize: '32px',
@@ -201,9 +194,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   heading: {
-    fontFamily: "'Playfair Display', Georgia, serif",
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
     fontSize: '42px',
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#fff',
     letterSpacing: '-0.5px',
     marginBottom: '8px',
@@ -219,7 +212,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     color: 'rgba(255,255,255,0.35)',
     textAlign: 'center',
-    marginBottom: '0',
   },
 
   divider: {
@@ -247,7 +239,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'rgba(255,255,255,0.8)',
   },
   qty: {
-    color: '#f5a623',
+    color: '#3ecf65',
     fontWeight: 500,
     marginRight: '2px',
   },
@@ -277,15 +269,15 @@ const styles: Record<string, React.CSSProperties> = {
   totalAmount: {
     fontSize: '22px',
     fontWeight: 600,
-    color: '#f5a623',
-    fontFamily: "'Playfair Display', Georgia, serif",
+    color: '#3ecf65',
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
   },
 
   button: {
     width: '100%',
     padding: '14px',
     borderRadius: '12px',
-    background: 'linear-gradient(135deg, #e8500a, #f5a623)',
+    background: '#28a84a',
     color: '#fff',
     fontSize: '15px',
     fontWeight: 600,
@@ -293,7 +285,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: 'none',
     cursor: 'pointer',
     letterSpacing: '0.2px',
-    boxShadow: '0 4px 24px rgba(232,80,10,0.35)',
+    boxShadow: '0 4px 24px rgba(40,168,74,0.35)',
     transition: 'opacity 0.15s ease, transform 0.15s ease',
     marginTop: 'auto',
   },

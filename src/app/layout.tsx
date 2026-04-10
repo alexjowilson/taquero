@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Taquero",                          // 👈 update
-  description: "Find your taco truck.",      // 👈 update
+  title: "GoVendGo",
+  description: "Real-time GPS tracking and mobile ordering for food trucks.",
 };
 
 export default function RootLayout({
