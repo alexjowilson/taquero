@@ -10,13 +10,15 @@ GoVendGo is a full-stack SaaS platform that gives food truck operators a real-ti
 
 ## Screenshots
 
+## Screenshots
+
 | Landing Page | Live Map | Menu |
 |---|---|---|
-| ![Landing Page](screenshots/Landing_Page.png) | ![Clicked Truck](screenshots/Clicked_Truck.png) | ![Menu](screenshots/Menu.png) |
+| ![Landing Page](docs/screenshots/Landing_Page.png) | ![Clicked Truck](docs/screenshots/Clicked_Truck.png) | ![Menu](docs/screenshots/Menu.png) |
 
 | Cart | Square Checkout | Order Confirmation |
 |---|---|---|
-| ![View Order](screenshots/View_Order.png) | ![Square Checkout](screenshots/Square_Checkout_1.png) | ![You're All Set](screenshots/You_re_All_Set.png) |
+| ![View Order](docs/screenshots/View_Order.png) | ![Square Checkout](docs/screenshots/Square_Checkout_1.png) | ![You're All Set](docs/screenshots/You're_All_Set.png) |
 
 ---
 
