@@ -2,13 +2,27 @@
 
 **Real-time GPS tracking and mobile ordering for food trucks.**
 
-Live at → **[govendgo.com](https://govendgo.com)**
-
-GoVendGo is a full-stack SaaS platform that gives food truck operators a real-time GPS presence, mobile ordering, and Square-powered payments — all in one platform built for vendors on the go. Currently serving the Highway 99 corridor in Lynnwood/Everett, WA.
+🌐 **Live at [govendgo.com](https://govendgo.com)**
 
 ---
 
-## Screenshots
+GoVendGo is a production-grade, full-stack SaaS platform built from scratch — featuring live GPS hardware, real-time map updates, a complete mobile ordering flow, and Square-powered payments verified end-to-end. Currently serving food truck operators on the Highway 99 corridor in Lynnwood/Everett, WA.
+
+**Built with:** Next.js 14 · Supabase real-time · Google Maps · Square API · MicroPython on ESP32 · Cellular GPS (LILYGO T-SIM7600G-H R2) · Deployed on Vercel
+
+---
+
+## 🟢 Project Status
+
+| | |
+|---|---|
+| **Production URL** | [govendgo.com](https://govendgo.com) |
+| **Payments** | Square production environment — verified end-to-end with real transaction |
+| **GPS** | ESP32 + MicroPython live over Wi-Fi · Cellular swap in progress (LILYGO T-SIM7600G-H R2) |
+| **Database** | Supabase Postgres with real-time WebSocket subscriptions |
+| **Deployment** | Auto-deploys on push to `main` via Vercel |
+
+---
 
 ## Screenshots
 
@@ -18,42 +32,18 @@ GoVendGo is a full-stack SaaS platform that gives food truck operators a real-ti
 
 | Cart | Square Checkout | Order Confirmation |
 |---|---|---|
-| ![View Order](docs/screenshots/View_Order.png) | ![Square Checkout](docs/screenshots/Square_Checkout_1.png) | ![You're All Set](docs/screenshots/You're_All_Set.png) |
+| ![View Order](docs/screenshots/View_Order.png) | ![Square Checkout](docs/screenshots/Square_Checkout_1.png) | ![You're All Set](docs/screenshots/Youre_All_Set.png) |
 
 ---
 
 ## Features
 
-- **Live GPS tracking** — Trucks update their location in real time via ESP32 hardware over cellular (Hologram SIM). Customers see the truck move on the map as it happens.
-- **Distance badges** — Haversine formula calculates how far the truck is from the customer's current location.
-- **Mobile ordering** — Browse the full menu, add items to a cart, and pay securely via Square's hosted checkout — all before leaving your seat.
-- **Get Directions** — One tap opens Apple Maps (iOS) or Google Maps (Android) with turn-by-turn directions to the truck.
-- **Order confirmation** — After checkout, customers see a branded confirmation screen with their order summary, line items, and order timestamp.
-- **Square payments** — Production-grade Square Payment Links API with sandbox/production environment switching via `NODE_ENV`.
-
----
-
-## Tech Stack
-
-### Frontend
-- [Next.js 14](https://nextjs.org/) + TypeScript
-- [`@vis.gl/react-google-maps`](https://visgl.github.io/react-google-maps/) — live truck tracking map
-- Deployed on [Vercel](https://vercel.com)
-
-### Backend
-- [Supabase](https://supabase.com) — Postgres database with real-time WebSocket subscriptions
-- `truck_locations` table with `REPLICA IDENTITY FULL` and real-time publications enabled
-- RLS policy: public read, anonymous UPDATE
-
-### Payments
-- [Square API](https://developer.squareup.com/) — Payment Links API
-- Production credentials on Vercel, sandbox credentials locally via `NODE_ENV` check
-
-### IoT / Hardware
-- ESP32-WROOM-32 running MicroPython — GPS simulation over Wi-Fi (dev)
-- LILYGO T-SIM7600G-H R2 — cellular GPS hardware (in progress)
-- Hologram SIM — APN: `hologram`, 6MB cap, pay-as-you-go
-- `mpremote` for firmware deployment
+- **Live GPS tracking** — Trucks post their location every 30 seconds via ESP32 hardware over cellular. Supabase real-time pushes updates to every connected browser instantly — no polling.
+- **Haversine distance badges** — Calculates and displays how far the truck is from the customer's current location in real time.
+- **Mobile ordering** — Full menu browsing, cart management, and Square-hosted checkout — all before the customer leaves their seat.
+- **iOS/Android-aware directions** — One tap opens Apple Maps on iOS or Google Maps on Android with turn-by-turn routing to the truck.
+- **Order confirmation** — Post-payment screen shows a branded summary with line items, total, and order timestamp. Survives Square's external redirect via `localStorage`.
+- **Square Payment Links API** — Production-grade checkout with automatic sandbox/production switching via `NODE_ENV`.
 
 ---
 
@@ -63,22 +53,49 @@ GoVendGo is a full-stack SaaS platform that gives food truck operators a real-ti
 Customer Browser
       │
       ▼
-  Next.js (Vercel)
-  ├── page.tsx          — Landing page + map hero
-  ├── TruckMap.tsx      — Google Maps + real-time Supabase subscription
-  ├── MenuModal.tsx     — Menu, cart, checkout flow
-  ├── /api/checkout     — Square Payment Links API route
-  └── /order-confirmation — Post-payment confirmation page
+  Next.js 14 (Vercel — govendgo.com)
+  ├── page.tsx               — Landing page + map hero
+  ├── TruckMap.tsx           — Google Maps + Supabase real-time subscription
+  ├── MenuModal.tsx          — Menu, cart, checkout flow
+  ├── /api/checkout          — Square Payment Links API route
+  └── /order-confirmation    — Post-payment confirmation page
       │
       ▼
-  Supabase (Postgres + Real-time)
-  ├── truck_locations   — lat/lng, recorded_at, truck_id
-  └── menu_items        — name, description, price, category
+  Supabase (Postgres + Real-time WebSockets)
+  ├── truck_locations        — lat/lng, recorded_at, truck_id
+  └── menu_items             — name, description, price, category
       ▲
       │
-  ESP32 / LILYGO (MicroPython)
+  ESP32 / LILYGO T-SIM7600G-H R2 (MicroPython)
   └── POST lat/lng every 30s → Supabase REST API
+       ├── Wi-Fi mode (dev/testing)
+       └── Hologram cellular SIM (production)
 ```
+
+---
+
+## Tech Stack
+
+### Frontend
+- [Next.js 14](https://nextjs.org/) + TypeScript
+- [`@vis.gl/react-google-maps`](https://visgl.github.io/react-google-maps/) — live truck tracking map
+- Cormorant Garamond + DM Sans typography
+- Deployed on [Vercel](https://vercel.com)
+
+### Backend
+- [Supabase](https://supabase.com) — Postgres + real-time WebSocket subscriptions
+- `REPLICA IDENTITY FULL` on `truck_locations` for real-time UPDATE events
+- RLS: public read, anonymous UPDATE
+
+### Payments
+- [Square API](https://developer.squareup.com/) — Payment Links API (`square` npm package)
+- `NODE_ENV === 'production'` switches between sandbox (local) and production (Vercel) credentials automatically
+
+### IoT / Hardware
+- **ESP32-WROOM-32** running MicroPython — GPS simulation over Wi-Fi
+- **LILYGO T-SIM7600G-H R2** — cellular GPS hardware (in progress)
+- **Hologram SIM** — APN: `hologram`, 6MB cap, pay-as-you-go
+- `mpremote` for firmware deployment over serial
 
 ---
 
@@ -107,8 +124,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | Variable | Used In |
 |---|---|
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | TruckMap.tsx |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase client |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase client + config.py |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client + config.py |
 | `SQUARE_SANDBOX_ACCESS_TOKEN` | route.ts (local dev) |
 | `SQUARE_SANDBOX_LOCATION_ID` | route.ts (local dev) |
 | `SQUARE_ACCESS_TOKEN` | route.ts (production) |
@@ -121,18 +138,24 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Hardware Setup (ESP32)
 
 ```bash
-# Flash MicroPython firmware, then copy files
+# Flash MicroPython firmware, then deploy files to the board
 mpremote connect /dev/tty.SLAB_USBtoUART fs cp hardware/esp32/main.py :main.py
 mpremote connect /dev/tty.SLAB_USBtoUART fs cp hardware/esp32/config.py :config.py
 ```
 
-`config.py` contains credentials and is excluded from Git. See `config.py.example` for the required fields.
+`config.py` contains credentials and is excluded from Git. See `config.py.example` for required fields.
+
+**Cellular swap checklist (when LILYGO arrives):**
+- [ ] Remove `connect_wifi()` block from `main.py`
+- [ ] Add cellular init with APN: `hologram`
+- [ ] Change `POST_INTERVAL` from 2s to 30s
+- [ ] Replace waypoints loop with real SIM7600 GPS reads
 
 ---
 
 ## Deployment
 
-The app auto-deploys to [govendgo.com](https://govendgo.com) on every push to `main` via Vercel.
+Auto-deploys to [govendgo.com](https://govendgo.com) on every push to `main` via Vercel.
 
 ```bash
 git add .
@@ -142,16 +165,8 @@ git push origin main
 
 ---
 
-## Project Status
+## About
 
-This project is now branded as **GoVendGo** — a platform for food truck operators to manage real-time GPS tracking and mobile ordering. The repo name reflects the original prototype name.
+This project is now branded as **GoVendGo** — a platform for food truck operators to manage real-time GPS tracking and mobile ordering. The repository name reflects the original prototype.
 
-**Production:** Live at [govendgo.com](https://govendgo.com)  
-**Payments:** Square production environment verified end-to-end  
-**Hardware:** Cellular GPS swap in progress (LILYGO T-SIM7600G-H R2)
-
----
-
-## License
-
-Private — all rights reserved.
+Built by [Alex Wilson](https://github.com/alexjowilson).
