@@ -52,6 +52,29 @@ def wait_for(pattern, timeout=45):
         time.sleep(0.2)
     return buf.decode("utf-8", "ignore").strip()
 
+def sync_rtc_from_modem():
+    """Read time from modem network time and set ESP32 RTC."""
+    for attempt in range(10):
+        r = send_at('AT+CCLK?', timeout=5)
+        if '"' in r:
+            break
+        print("Clock read attempt {}/10, retrying...".format(attempt + 1))
+        time.sleep(2)
+    try:
+        start = r.index('"') + 1
+        end = r.index('"', start)
+        t = r[start:end]
+        date, rest = t.split(",")
+        yy, mo, dd = date.split("/")
+        time_part = rest[:8]
+        hh, mm, ss = time_part.split(":")
+        year = 2000 + int(yy)
+        rtc = machine.RTC()
+        rtc.datetime((year, int(mo), int(dd), 0, int(hh), int(mm), int(ss), 0))
+        print("RTC synced: {}-{}-{} {}:{}:{}".format(year, mo, dd, hh, mm, ss))
+    except Exception as e:
+        print("RTC sync failed:", e)
+
 # ─── MODEM INIT ───────────────────────────────────────────
 def init_modem():
     print("=== Modem Init ===")
@@ -92,20 +115,27 @@ def init_modem():
 
     send_at("AT+CGACT=1,1", timeout=15)
 
-    # Set Google DNS — modem sometimes gets no DNS from Hologram
+    # Drain URCs for full 20 seconds — modem floods after CGACT
+    print("Waiting for modem to settle...")
+    t0 = time.time()
+    while time.time() - t0 < 20:
+        uart.read(1024)
+        time.sleep(0.5)
+    print("Resuming...")
+
+    # Set Google DNS
     send_at('AT+CDNSCFG="8.8.8.8","8.8.4.4"')
 
     # Verify DNS works
     send_at('AT+CDNSGIP="tsnobtgthhyccyfjeabo.supabase.co"', timeout=10, expect="+CDNSGIP")
 
-
-    # Set clock manually — required for SSL cert validation
-    send_at('AT+CCLK="26/04/11,20:30:00+00"')
+    # Sync ESP32 RTC from modem network time
+    sync_rtc_from_modem()
 
     # Configure SSL
     send_at('AT+CSSLCFG="sslversion",1,3')    # TLS 1.2
     send_at('AT+CSSLCFG="authmode",1,0')       # No client cert
-    send_at('AT+CSSLCFG="enableSNI",1,1')      # Enable SNI — required by Supabase
+    send_at('AT+CSSLCFG="enableSNI",1,1')      # Enable SNI
 
     print("=== Modem Ready ===")
 
@@ -142,7 +172,8 @@ def get_gps():
 def iso_timestamp():
     t = time.localtime()
     if t[0] < 2024:
-        return "2026-04-11T00:00:00+00:00"
+        print("Warning: RTC not synced")
+        return "2026-04-13T00:00:00+00:00"
     return "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}+00:00".format(
         t[0], t[1], t[2], t[3], t[4], t[5]
     )
@@ -178,15 +209,13 @@ def update_location(lat, lng):
     uart.write(body.encode())
     time.sleep(1)
 
-    # Flush any buffered bytes before waiting for URC
     uart.read(256)
     time.sleep(0.1)
-
     uart.write(b"AT+HTTPACTION=1\r\n")
     result = wait_for("+HTTPACTION", timeout=45)
     print("({:.5f}, {:.5f}) → {}".format(lat, lng, result))
 
-    if "204" not in result:
+    if "204" not in result and "200" not in result:
         send_at("AT+HTTPREAD=0,500", timeout=5)
 
     send_at("AT+HTTPTERM", timeout=5)
