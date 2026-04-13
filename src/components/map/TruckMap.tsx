@@ -37,13 +37,27 @@ function getDistanceMiles(a: LatLng, b: LatLng): number {
   return R * c
 }
 
+// ─── Relative time helper ─────────────────────────────────────────────────────
+function getRelativeTime(dateStr: string): string {
+  const diff = Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000))
+  if (diff < 60) return `${diff}s ago`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  return new Date(dateStr).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/Los_Angeles',
+  })
+}
+
 // ─── MapController ────────────────────────────────────────────────────────────
 type MapControllerProps = {
   userLocation: LatLng | null
   truckPositions: LatLng[]
+  locationReady: boolean
 }
 
-function MapController({ userLocation, truckPositions }: MapControllerProps) {
+function MapController({ userLocation, truckPositions, locationReady }: MapControllerProps) {
   const map = useMap()
   const hasFit = useRef(false)
 
@@ -51,6 +65,7 @@ function MapController({ userLocation, truckPositions }: MapControllerProps) {
     if (!map) return
     if (hasFit.current) return
     if (truckPositions.length === 0) return
+    if (!locationReady) return
 
     const bounds = new google.maps.LatLngBounds()
 
@@ -65,7 +80,7 @@ function MapController({ userLocation, truckPositions }: MapControllerProps) {
     }
 
     hasFit.current = true
-  }, [map, userLocation, truckPositions])
+  }, [map, userLocation, truckPositions, locationReady])
 
   return null
 }
@@ -92,22 +107,19 @@ type TruckMarkerProps = {
   userLocation: LatLng | null
 }
 
-// ─── Relative time helper ─────────────────────────────────────────────────────
-function getRelativeTime(dateStr: string): string {
-  const diff = Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000))
-  if (diff < 60) return `${diff}s ago`
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  return new Date(dateStr).toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'America/Los_Angeles',
-  })
-}
-
 function TruckMarker({ truck, userLocation }: TruckMarkerProps) {
   const [open, setOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  // Intercept browser back button to close modal instead of navigating away
+  useEffect(() => {
+    if (menuOpen) {
+      window.history.pushState({ menuOpen: true }, '')
+      const handlePopState = () => setMenuOpen(false)
+      window.addEventListener('popstate', handlePopState)
+      return () => window.removeEventListener('popstate', handlePopState)
+    }
+  }, [menuOpen])
 
   const loc = Array.isArray(truck.latest_location)
     ? truck.latest_location[0]
@@ -169,7 +181,7 @@ function TruckMarker({ truck, userLocation }: TruckMarkerProps) {
                 📍 {distanceLabel}
               </p>
             )}
-            <a
+            <a 
               href={directionsUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -197,12 +209,19 @@ function TruckMarker({ truck, userLocation }: TruckMarkerProps) {
 export default function TruckMap({ clientSlug }: TruckMapProps) {
   const { trucks, loading, error } = useTruckLocations(clientSlug)
   const [userLocation, setUserLocation] = useState<LatLng | null>(null)
+  const [locationReady, setLocationReady] = useState(false)
 
   useEffect(() => {
-    if (!navigator.geolocation) return
+    if (!navigator.geolocation) {
+      setLocationReady(true)
+      return
+    }
     navigator.geolocation.getCurrentPosition(
-      pos => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {}
+      pos => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setLocationReady(true)
+      },
+      () => setLocationReady(true)
     )
   }, [])
 
@@ -243,6 +262,7 @@ export default function TruckMap({ clientSlug }: TruckMapProps) {
           <MapController
             userLocation={userLocation}
             truckPositions={truckPositions}
+            locationReady={locationReady}
           />
 
           {userLocation && <UserMarker position={userLocation} />}
