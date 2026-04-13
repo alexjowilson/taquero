@@ -92,6 +92,19 @@ type TruckMarkerProps = {
   userLocation: LatLng | null
 }
 
+// ─── Relative time helper ─────────────────────────────────────────────────────
+function getRelativeTime(dateStr: string): string {
+  const diff = Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000))
+  if (diff < 60) return `${diff}s ago`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  return new Date(dateStr).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/Los_Angeles',
+  })
+}
+
 function TruckMarker({ truck, userLocation }: TruckMarkerProps) {
   const [open, setOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -107,7 +120,7 @@ function TruckMarker({ truck, userLocation }: TruckMarkerProps) {
 
   if (isNaN(lat) || isNaN(lng)) return null
 
-  const lastUpdated = new Date(loc.recorded_at).toLocaleTimeString()
+  const lastUpdated = getRelativeTime(loc.recorded_at)
 
   const distanceMiles = userLocation
     ? getDistanceMiles(userLocation, { lat, lng })
