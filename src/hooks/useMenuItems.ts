@@ -11,7 +11,7 @@ export type MenuItem = {
   sort_order: number;
 };
 
-const TRUCK_ID = '4ad56a60-79f7-4497-80c4-d996026534d6';
+export const TRUCK_ID = '4ad56a60-79f7-4497-80c4-d996026534d6';
 
 export function useMenuItems() {
   const [items, setItems] = useState<MenuItem[]>([]);

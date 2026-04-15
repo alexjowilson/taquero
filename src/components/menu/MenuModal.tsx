@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMenuItems } from '@/hooks/useMenuItems';
+import { useMenuItems, TRUCK_ID } from '@/hooks/useMenuItems';
 import { useCart } from '@/context/CartContext';
 
 type Props = {
@@ -47,7 +47,7 @@ export default function MenuModal({ onClose }: Props) {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cartItems }),
+        body: JSON.stringify({ items: cartItems, truckId: TRUCK_ID }),
       });
       const data = await res.json();
       if (data.url) {

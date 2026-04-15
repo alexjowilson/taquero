@@ -22,7 +22,7 @@ type CartItem = {
 
 export async function POST(req: Request) {
   try {
-    const { items }: { items: CartItem[] } = await req.json();
+    const { items, truckId }: { items: CartItem[], truckId: string } = await req.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       idempotencyKey: randomUUID(),
       order: {
         locationId,
+        metadata: {truck_id: truckId},
         lineItems: items.map(item => ({
           name: item.name,
           quantity: String(item.quantity),
