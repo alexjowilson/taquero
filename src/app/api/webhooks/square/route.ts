@@ -79,8 +79,12 @@ export async function POST(req: Request) {
       .single();
 
     if (orderError) {
-      console.error('Order insert error:', orderError);
-      return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
+        // Duplicate order — already processed, tell Square it's fine
+        if (orderError.code === '23505') {
+            return NextResponse.json({ ok: true });
+        }
+        console.error('Order insert error:', orderError);
+        return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
     }
 
     const items = lineItems.map((item) => ({
