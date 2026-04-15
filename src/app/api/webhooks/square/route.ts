@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   const buyerEmail = payment.buyer_email_address ?? null;
 
   try {
-    const orderResponse = await square.orders.retrieve({ orderId: squareOrderId });
+    const orderResponse = await square.orders.get({ orderId: squareOrderId });
     const order = orderResponse.order;
 
     if (!order) {
