@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { SquareClient, SquareEnvironment } from 'square';
 import { createClient } from '@supabase/supabase-js';
+import { sendOrderConfirmedEmail } from '@/utils/email';
 
 const isProduction = process.env.NODE_ENV === 'production';
-
 const square = new SquareClient({
   token: isProduction
     ? process.env.SQUARE_ACCESS_TOKEN!
@@ -44,7 +44,6 @@ export async function POST(req: Request) {
   }
 
   const payment = event.data?.object?.payment;
-
   if (!payment || payment.status !== 'COMPLETED') {
     return NextResponse.json({ ok: true });
   }
@@ -79,12 +78,11 @@ export async function POST(req: Request) {
       .single();
 
     if (orderError) {
-        // Duplicate order — already processed, tell Square it's fine
-        if (orderError.code === '23505') {
-            return NextResponse.json({ ok: true });
-        }
-        console.error('Order insert error:', orderError);
-        return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
+      if (orderError.code === '23505') {
+        return NextResponse.json({ ok: true });
+      }
+      console.error('Order insert error:', orderError);
+      return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
     }
 
     const items = lineItems.map((item) => ({
@@ -103,8 +101,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Failed to save order items' }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true });
+    // Send order confirmed email to customer
+    if (buyerEmail) {
+      try {
+        await sendOrderConfirmedEmail({
+          to: buyerEmail,
+          orderItems: items.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+          })),
+          total: Number(totalAmount),
+        })
+      } catch (emailErr) {
+        // Don't fail the webhook if email fails — order is already saved
+        console.error('Order confirmed email error:', emailErr);
+      }
+    }
 
+    return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Webhook error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

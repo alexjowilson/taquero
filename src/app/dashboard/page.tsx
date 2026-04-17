@@ -146,20 +146,34 @@ export default function DashboardPage() {
   }, [])
 
   const advanceStatus = async (order: Order) => {
-    const next = getNextStatus(order.status)
-    if (!next) return
+  const next = getNextStatus(order.status)
+  if (!next) return
 
-    await supabase
-      .from('orders')
-      .update({ status: next })
-      .eq('id', order.id)
+  await supabase
+    .from('orders')
+    .update({ status: next })
+    .eq('id', order.id)
 
-    setOrders((prev) =>
-      prev
-        .map((o) => o.id === order.id ? { ...o, status: next } : o)
-        .filter((o) => o.status !== 'fulfilled')
-    )
+  // Fire order ready email when operator marks it ready
+  if (next === 'ready') {
+    try {
+      await fetch('/api/orders/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.id }),
+      })
+    } catch (err) {
+      // Don't block UI if email fails
+      console.error('Notify email error:', err)
+    }
   }
+
+  setOrders((prev) =>
+    prev
+      .map((o) => o.id === order.id ? { ...o, status: next } : o)
+      .filter((o) => o.status !== 'fulfilled')
+  )
+}
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
