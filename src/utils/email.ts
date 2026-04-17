@@ -76,7 +76,7 @@ export async function sendOrderConfirmedEmail({ to, orderItems, total }: SendOrd
   `)
 
   return resend.emails.send({
-    from: 'GoVendGo <onboarding@resend.dev>',
+    from: 'GoVendGo <orders@govendgo.com>',
     to,
     subject: 'Your GoVendGo order is confirmed',
     html,
@@ -106,7 +106,7 @@ export async function sendOrderReadyEmail({ to, orderItems, total }: SendOrderRe
   `)
 
   return resend.emails.send({
-    from: 'GoVendGo <onboarding@resend.dev>',
+    from: 'GoVendGo <orders@govendgo.com>',
     to,
     subject: '🚚 Your order is ready for pickup!',
     html,
