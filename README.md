@@ -6,9 +6,9 @@
 
 ---
 
-GoVendGo is a production-grade, full-stack SaaS platform built from scratch — featuring live cellular GPS hardware, real-time map updates, a complete mobile ordering flow, Square-powered payments, and a real-time operator dashboard verified end-to-end. Currently serving food truck operators on the Highway 99 corridor in Lynnwood/Everett, WA.
+GoVendGo is a production-grade, full-stack SaaS platform built from scratch — featuring live cellular GPS hardware, real-time map updates, a complete mobile ordering flow, Square-powered payments, a real-time operator dashboard, and automated customer email notifications verified end-to-end. Currently serving food truck operators on the Highway 99 corridor in Lynnwood/Everett, WA.
 
-**Built with:** Next.js 14 · Supabase real-time · Google Maps · Square API · MicroPython on ESP32 · Cellular GPS (LILYGO T-SIM7600G-H R2) · Deployed on Vercel
+**Built with:** Next.js 14 · Supabase real-time · Google Maps · Square API · Resend · MicroPython on ESP32 · Cellular GPS (LILYGO T-SIM7600G-H R2) · Deployed on Vercel
 
 ---
 
@@ -21,6 +21,7 @@ GoVendGo is a production-grade, full-stack SaaS platform built from scratch — 
 | **GPS** | LILYGO T-SIM7600G-H R2 over Verizon LTE — real coordinates posting every 30s |
 | **Database** | Supabase Postgres with real-time WebSocket subscriptions |
 | **Operator Dashboard** | Live — real-time order feed, status flow, audio alerts, per-truck auth |
+| **Email Notifications** | Live — order confirmed + order ready emails from orders@govendgo.com |
 | **Deployment** | Auto-deploys on push to `main` via Vercel |
 
 ---
@@ -36,6 +37,12 @@ GoVendGo is a production-grade, full-stack SaaS platform built from scratch — 
 | Cart | Square Checkout | Order Confirmation |
 |---|---|---|
 | ![View Order](docs/screenshots/View_Order.png) | ![Square Checkout](docs/screenshots/Square_Checkout_1.png) | ![You're All Set](docs/screenshots/Youre_All_Set.png) |
+
+### Email Notifications
+
+| Order Confirmed | Order Ready |
+|---|---|
+| ![Order Confirmed](docs/screenshots/Order_Confirmed.png) | ![Ready For Pick Up](docs/screenshots/Ready_For_Pick_Up.png) |
 
 ### Operator Flow
 
@@ -57,7 +64,9 @@ GoVendGo is a production-grade, full-stack SaaS platform built from scratch — 
 - **Haversine distance badges** — Calculates and displays how far the truck is from the customer's current location in real time.
 - **Mobile ordering** — Full menu browsing, cart management, and Square-hosted checkout — all before the customer leaves their seat.
 - **iOS/Android-aware directions** — One tap opens Apple Maps on iOS or Google Maps on Android with turn-by-turn routing to the truck.
-- **Order confirmation** — Post-payment screen shows a branded summary with line items, total, and order timestamp. Survives Square's external redirect via `localStorage`.
+- **Order confirmation page** — Post-payment screen shows a branded summary with line items, total, and order timestamp. Survives Square's external redirect via `localStorage`.
+- **Order confirmed email** — Automatically sent to the customer on payment completion, from `orders@govendgo.com`. Shows line items, total, and sets expectation for the ready notification.
+- **Order ready email** — Sent to the customer the moment the operator marks their order ready. Prompts them to head to the truck for pickup.
 - **Square Payment Links API** — Production-grade checkout with automatic sandbox/production switching via `NODE_ENV`.
 
 ### Operator
@@ -80,7 +89,8 @@ Customer Browser
   ├── TruckMap.tsx              — Google Maps + Supabase real-time subscription
   ├── MenuModal.tsx             — Menu, cart, checkout flow
   ├── /api/checkout             — Square Payment Links API route
-  ├── /api/webhooks/square      — HMAC-verified Square webhook → Supabase orders
+  ├── /api/webhooks/square      — HMAC-verified Square webhook → Supabase + Resend
+  ├── /api/orders/notify        — Order ready email trigger (called by dashboard)
   ├── /order-confirmation       — Post-payment confirmation page
   ├── /login                    — Operator login (Supabase Auth)
   └── /dashboard                — Real-time operator order feed
@@ -96,6 +106,9 @@ Customer Browser
       │                │
   LILYGO T-SIM7600G-H R2    Square Webhook (payment.updated)
   MicroPython over LTE       HMAC verified, writes on COMPLETED
+                             └── Resend → orders@govendgo.com
+                                  ├── Order Confirmed (on payment)
+                                  └── Order Ready (on operator action)
 ```
 
 ---
@@ -121,6 +134,12 @@ Customer Browser
 - HMAC signature verification on every incoming webhook
 - `NODE_ENV === 'production'` switches between sandbox (local) and production (Vercel) credentials automatically
 
+### Email
+- [Resend](https://resend.com) — transactional email API
+- Custom domain verified — all emails send from `orders@govendgo.com`
+- DKIM, SPF, and MX records configured via Cloudflare auto-configure
+- Email failures never block webhooks or dashboard UI — isolated try/catch on all sends
+
 ### IoT / Hardware
 - **LILYGO T-SIM7600G-H R2** — cellular GPS hardware, live on Verizon LTE
 - **MicroPython v1.28.0** — AT command HTTP stack, RTC sync via `AT+CCLK`, real GPS reads
@@ -141,7 +160,7 @@ npm install
 
 # Set up environment variables
 cp .env.local.example .env.local
-# Fill in your Supabase, Google Maps, and Square sandbox keys
+# Fill in your Supabase, Google Maps, Square sandbox, and Resend keys
 
 # Run the dev server
 npm run dev
@@ -156,7 +175,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | TruckMap.tsx |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase client |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client |
-| `SUPABASE_SERVICE_ROLE_KEY` | Square webhook route (server-side only) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Square webhook + notify routes (server-side only) |
 | `SQUARE_SANDBOX_ACCESS_TOKEN` | route.ts (local dev) |
 | `SQUARE_SANDBOX_LOCATION_ID` | route.ts (local dev) |
 | `SQUARE_ACCESS_TOKEN` | route.ts (production) |
@@ -164,6 +183,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `SQUARE_APP_ID` | route.ts (production) |
 | `SQUARE_WEBHOOK_SIGNATURE_KEY` | webhooks/square/route.ts |
 | `NEXT_PUBLIC_BASE_URL` | Square redirect URL |
+| `RESEND_API_KEY` | email.ts (server-side only) |
 
 ---
 
@@ -195,6 +215,6 @@ git push origin main
 
 ## About
 
-GoVendGo is a real-time food truck platform for GPS tracking, mobile ordering, and operator management. Built as a production SaaS product targeting food truck operators on the Highway 99 corridor in the Lynnwood/Everett, WA area.
+GoVendGo is a real-time food truck platform for GPS tracking, mobile ordering, operator management, and customer notifications. Built as a production SaaS product targeting food truck operators on the Highway 99 corridor in the Lynnwood/Everett, WA area.
 
 Built by [Alex Wilson](https://github.com/alexjowilson).
