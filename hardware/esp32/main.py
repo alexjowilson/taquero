@@ -1,11 +1,10 @@
 import machine
 import time
 import ujson
-from config import SUPABASE_URL, SUPABASE_KEY
+from config import SUPABASE_URL, SUPABASE_KEY, POST_INTERVAL
 
 # ─── CONFIG ───────────────────────────────────────────────
 TRUCK_ID      = "4ad56a60-79f7-4497-80c4-d996026534d6"
-POST_INTERVAL = 30
 
 # ─── SIM7600 UART PINS ────────────────────────────────────
 UART_TX  = 27
