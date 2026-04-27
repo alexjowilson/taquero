@@ -152,33 +152,62 @@ def nmea_to_decimal(raw, direction):
         decimal = -decimal
     return decimal
 
+# ── CHANGED: now also returns GPS date/time for validation ──
 def get_gps():
     r = send_at("AT+CGPSINFO", timeout=5, expect="+CGPSINFO")
     for line in r.split("\n"):
         if "+CGPSINFO:" in line:
             data = line.split(":", 1)[1].strip()
             parts = data.split(",")
-            if len(parts) >= 4 and parts[0].strip():
+            # +CGPSINFO: lat,N/S,lon,E/W,date(DDMMYY),time(HHMMSS.s),alt,speed,course
+            if len(parts) >= 6 and parts[0].strip():
                 try:
                     lat = nmea_to_decimal(parts[0].strip(), parts[1].strip())
                     lng = nmea_to_decimal(parts[2].strip(), parts[3].strip())
-                    return lat, lng
+                    gps_date = parts[4].strip()   # DDMMYY
+                    gps_time = parts[5].strip()   # HHMMSS.s
+                    return lat, lng, gps_date, gps_time
                 except Exception as e:
                     print("GPS parse error:", e)
     return None
 
+# ── CHANGED: validates GPS time before trusting it ──────────
+def is_gps_time_valid(gps_date, gps_time):
+    """Return False if GPS time is zeroed out (no time fix yet)."""
+    try:
+        hh = int(gps_time[0:2])
+        mm = int(gps_time[2:4])
+        ss = int(float(gps_time[4:]))
+        dd = int(gps_date[0:2])
+        mo = int(gps_date[2:4])
+        yy = int(gps_date[4:6])
+        # All zeros means GPS hasn't locked time yet
+        if hh == 0 and mm == 0 and ss == 0 and dd == 0 and mo == 0 and yy == 0:
+            return False
+        return True
+    except Exception as e:
+        print("GPS time parse error:", e)
+        return False
+
 # ─── TIMESTAMP ────────────────────────────────────────────
+# ── CHANGED: removed hardcoded fallback, uses RTC only ─────
 def iso_timestamp():
     t = time.localtime()
     if t[0] < 2024:
-        print("Warning: RTC not synced")
-        return "2026-04-13T00:00:00+00:00"
+        # RTC not synced — should not happen after init_modem() but log it
+        print("Warning: RTC not synced, skipping post")
+        return None
     return "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}+00:00".format(
         t[0], t[1], t[2], t[3], t[4], t[5]
     )
 
 # ─── SUPABASE VIA SIM7600 AT HTTP ─────────────────────────
 def update_location(lat, lng):
+    ts = iso_timestamp()
+    if ts is None:
+        print("No valid timestamp, skipping post")
+        return
+
     url = "{}/rest/v1/truck_locations?on_conflict=truck_id&apikey={}".format(
         SUPABASE_URL, SUPABASE_KEY
     )
@@ -186,7 +215,7 @@ def update_location(lat, lng):
         "truck_id":    TRUCK_ID,
         "latitude":    lat,
         "longitude":   lng,
-        "recorded_at": iso_timestamp()
+        "recorded_at": ts
     })
     body_len = len(body)
 
@@ -227,8 +256,12 @@ init_gps()
 while True:
     fix = get_gps()
     if fix:
-        lat, lng = fix
-        update_location(lat, lng)
+        lat, lng, gps_date, gps_time = fix
+        # ── CHANGED: guard against posting with invalid GPS time ──
+        if not is_gps_time_valid(gps_date, gps_time):
+            print("GPS position locked but time not valid yet — retrying in {}s".format(POST_INTERVAL))
+        else:
+            update_location(lat, lng)
     else:
         print("No GPS fix yet — retrying in {}s".format(POST_INTERVAL))
     time.sleep(POST_INTERVAL)
